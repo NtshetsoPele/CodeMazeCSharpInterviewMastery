@@ -1,0 +1,45 @@
+mkdir hello-cli && cd hello-cli
+dotnet new console -n Hello
+cd Hello
+dotnet run
+
+dotnet add package Newtonsoft.Json --version 13.0.3
+
+dotnet restore
+dotnet build -c Release
+dotnet clean
+
+dotnet new xunit -n Calc.Tests
+cd Calc.Tests
+dotnet test --filter "FullyQualifiedName~Addition"
+
+cd ..
+dotnet new sln -n Demo
+dotnet sln Demo.sln add Hello/Hello.csproj
+dotnet new classlib -n Core
+dotnet sln Demo.sln add Core/Core.csproj
+dotnet add Hello/Hello.csproj reference Core/Core.csproj
+
+# Framework-dependent (smaller, requires shared runtime on target)
+dotnet publish -c Release -o out
+
+# Self-contained (includes runtime; larger)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out-sc
+
+dotnet watch run
+
+dotnet new editorconfig
+dotnet format
+
+# Global tool (user scope)
+dotnet tool install -g dotnet-ef
+dotnet-ef --help
+
+# Local tool (repo scope)
+dotnet new tool-manifest
+dotnet tool install dotnet-ef
+dotnet tool restore   # for CI, restores tools from the manifest
+
+dotnet workload list
+dotnet workload install wasm-tools
+dotnet --info
