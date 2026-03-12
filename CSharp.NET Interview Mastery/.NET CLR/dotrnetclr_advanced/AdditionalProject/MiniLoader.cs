@@ -32,7 +32,7 @@ public static class MiniLoader
         var target = methods.FirstOrDefault(m =>
             m.Name == methodName &&
             m.ReturnType == typeof(int) &&
-            m.GetParameters() is var ps && ps.Length == 1 && ps[0].ParameterType == typeof(int));
+            m.GetParameters() is var pi && pi.Length == 1 && pi[0].ParameterType == typeof(int));
 
         if (target is null)
         {
@@ -40,22 +40,24 @@ public static class MiniLoader
             return;
         }
 
-        object?[] args = new object?[] { 0 };
+        object?[] args = [0];
         int checksum = 0;
         // Warmup: trigger JIT (and potential tier-up preparations)
         for (int i = 0; i < warmup; i++)
         {
             args[0] = i;
-            checksum ^= (int)target.Invoke(null, args)!;
+            // Ensures method calls cannot be eliminated
+            // Forces runtime to compute return value
+            checksum ^= (int)target.Invoke(obj: null, parameters: args)!;
         }
         // Timed phase
         var sw = Stopwatch.StartNew();
         for (int i = 0; i < timed; i++)
         {
             args[0] = i;
-            checksum ^= (int)target.Invoke(null, args)!;
+            checksum ^= (int)target.Invoke(obj: null, parameters: args)!;
         }
         sw.Stop();
-        Console.WriteLine($"Timed calls: {timed}, Elapsed: {sw.ElapsedMilliseconds} ms, Checksum: {checksum}");
+        Console.WriteLine($"Timed calls: {timed:N1}, Elapsed: {sw.ElapsedMilliseconds} ms, Checksum: {checksum}");
     }
 }
