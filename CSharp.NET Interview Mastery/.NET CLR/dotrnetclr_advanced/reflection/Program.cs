@@ -1,47 +1,17 @@
 ﻿using System.Reflection;
-using System.Diagnostics;
+using AdditionalProject;
 
-MiniLoader.Run(
-    assemblyPath: "System.Collections.Generic.dll",
-    typeFullName: "MyLibrary.MyClass",
-    methodName: "MyMethod",
-    warmup: 1_000,
-    timed: 10_000
-);
+Demo.Main();
 
-public static class MiniLoader
+public static class Demo
 {
-    // Load assembly path, list public static methods on a specified type,
-    // then invoke a method by name with N warmup calls and M timed calls.
-    public static void Run(string assemblyPath, string typeFullName, string methodName, int warmup, int timed)
+    // Example target assembly & type:
+    // Compile this file into a separate dll or reuse it by loading itself.
+    public static int Square(int x) => x * x;
+    public static void Main()
     {
-        var assembly = Assembly.LoadFrom(assemblyPath);
-        var type = assembly.GetType(typeFullName);
-        if (type == null)
-        {
-            Console.WriteLine($"Type {typeFullName} not found in assembly {assemblyPath}.");
-            return;
-        }
-
-        var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
-        if (method == null)
-        {
-            Console.WriteLine($"Method {methodName} not found in type {typeFullName}.");
-            return;
-        }
-
-        for (int i = 0; i < warmup; i++)
-        {
-            method.Invoke(obj: null, parameters: null);
-        }
-
-        var stopwatch = Stopwatch.StartNew();
-        for (int i = 0; i < timed; i++)
-        {
-            method.Invoke(obj: null, parameters: null);
-        }
-        stopwatch.Stop();
-
-        Console.WriteLine($"Executed {timed} calls in {stopwatch.ElapsedMilliseconds} ms.");
+        var path = Assembly.GetExecutingAssembly().Location;
+        var typeName = typeof(Demo).FullName!;
+        MiniLoader.Run(path, typeName, nameof(Square), warmup: 10_000, timed: 100_000);
     }
 }

@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="AdditionalProject/AdditionalProject.csproj" />
   <Project Path="reflection/reflection.csproj" />
 </Solution>
